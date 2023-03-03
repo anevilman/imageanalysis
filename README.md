@@ -1,2 +1,0 @@
-# imageanalysis
-Project demonstrating coding
