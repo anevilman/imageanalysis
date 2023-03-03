@@ -1,12 +1,10 @@
 package com.dupont.imageanalysis.handlers.taggers.imagga;
 
+import com.dupont.imageanalysis.exceptions.InvalidRequestException;
 import com.dupont.imageanalysis.handlers.taggers.ObjectTagger;
 import com.dupont.imageanalysis.models.ImageSubmission;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -14,6 +12,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,12 +22,13 @@ import java.util.stream.Collectors;
 @Profile("imagga")
 public class ImaggaHandler implements ObjectTagger {
 
-    private static final String API_SECRET = "Basic YWNjXzc2MGNhOGExZDE3Mzc2YTo4NzE2N2NhOGY4ZjIwOWQxN2I5NDNiMjQzNmRmOWUyNA==";
+    private static final String API_USER = "acc_760ca8a1d17376a";
+    private static final String API_SECRET = "87167ca8f8f209d17b943b2436df9e24";
 
     private final RestTemplate restTemplate;
 
-    public ImaggaHandler(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public ImaggaHandler() {
+        restTemplate = new RestTemplate();
     }
 
 
@@ -37,7 +39,7 @@ public class ImaggaHandler implements ObjectTagger {
     }
 
     private void updateHeadersWithAuth(HttpHeaders headers) {
-        headers.setBasicAuth(API_SECRET);
+        headers.setBasicAuth(API_USER, API_SECRET);
     }
 
     private String uploadImage(byte[] imageFile) {
@@ -61,15 +63,26 @@ public class ImaggaHandler implements ObjectTagger {
 
     @Override
     public Set<String> findObjects(ImageSubmission imageSubmission) {
+        final URI imageUri;
         UriComponentsBuilder builder = startURIBuild("tags");
         if (imageSubmission.getImage() != null) {
             String uploadId = uploadImage(imageSubmission.getImage());
             builder.queryParam("image_upload_id", uploadId);
+            imageUri = builder.build().toUri();
         } else {
-            builder.queryParam("image_url", imageSubmission.getImageUrl());
+            String urlBase = builder.toUriString() + "?image_url=" + URLEncoder.encode(imageSubmission.getImageUrl(), Charset.defaultCharset());
+            try {
+                imageUri = new URI(urlBase);
+            } catch (URISyntaxException e) {
+                throw new InvalidRequestException(e.getMessage());
+            }
         }
+        HttpHeaders headers = new HttpHeaders();
+        updateHeadersWithAuth(headers);
 
-        ResponseEntity<ImaggaTagResponse> response = restTemplate.getForEntity(builder.build().toUri(), ImaggaTagResponse.class);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        ResponseEntity<ImaggaTagResponse> response = restTemplate.exchange(imageUri, HttpMethod.GET, request, ImaggaTagResponse.class);
 
         return Optional.ofNullable(response.getBody())
                 .map(ImaggaTagResponse::getResult)

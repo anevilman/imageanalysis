@@ -47,11 +47,4 @@ public class ImageAnalysisController {
         return imagePostHandler.submitImage(imageSubmission);
     }
 
-    @GetMapping(value = "/test")
-    public String test() throws Exception {
-        ImageSubmission submission = ImageSubmission.builder().image("x".getBytes(StandardCharsets.UTF_8)).build();
-        System.out.println(new ObjectMapper().writeValueAsString(submission));
-        return "TEST";
-    }
-
 }

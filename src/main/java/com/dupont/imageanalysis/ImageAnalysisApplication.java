@@ -7,8 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ImageAnalysisApplication {
 
 	public static void main(String[] args) {
-
-
 		SpringApplication.run(ImageAnalysisApplication.class, args);
 	}
 

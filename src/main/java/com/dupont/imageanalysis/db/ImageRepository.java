@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ImageRepository extends CrudRepository<ImageDBModel, Long> {
 
-    List<ImageDBModel> findUniqueByImageObjectsIn(List<ObjectDBModel> objects);
+    List<ImageDBModel> findByImageObjectsIn(List<ObjectDBModel> objects);
     Optional<ImageDBModel> findByImageId(String imageId);
 }

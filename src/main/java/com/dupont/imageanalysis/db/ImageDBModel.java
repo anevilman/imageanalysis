@@ -43,4 +43,14 @@ public class ImageDBModel {
             inverseJoinColumns = @JoinColumn(name = "OBJECTS_PK")
     )
     private List<ObjectDBModel> imageObjects;
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof ImageDBModel)) {
+            return false;
+        }
+        ImageDBModel otherImage = (ImageDBModel) other;
+        return imagesPK.equals(otherImage.imagesPK);
+    }
+
 }

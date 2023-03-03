@@ -40,7 +40,8 @@ public class ImageGetHandler {
         if (dbObjects.isEmpty()) {
             result = Collections.emptyList();
         } else {
-            result = imageRepository.findUniqueByImageObjectsIn(dbObjects).stream()
+            result = imageRepository.findByImageObjectsIn(dbObjects).stream()
+                    .distinct()
                     .map(ImageDBModel::mapToOutputModel)
                     .collect(Collectors.toList());
             if (result.isEmpty()) {
