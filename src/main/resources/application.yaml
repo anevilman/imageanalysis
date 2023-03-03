@@ -15,6 +15,8 @@ spring:
       maximumPoolSize: 2
 server:
   port: 9090
+  error:
+    include-message: always
 
 flyway:
   url: jdbc:h2:file:./db/rdbms;AUTO_SERVER=TRUE

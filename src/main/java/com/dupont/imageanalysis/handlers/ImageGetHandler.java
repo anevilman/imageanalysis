@@ -4,6 +4,7 @@ import com.dupont.imageanalysis.db.ImageDBModel;
 import com.dupont.imageanalysis.db.ImageRepository;
 import com.dupont.imageanalysis.db.ObjectDBModel;
 import com.dupont.imageanalysis.db.ObjectRepository;
+import com.dupont.imageanalysis.exceptions.ImageNotFoundException;
 import com.dupont.imageanalysis.models.Image;
 import org.springframework.stereotype.Component;
 
@@ -42,12 +43,15 @@ public class ImageGetHandler {
             result = imageRepository.findUniqueByImageObjectsIn(dbObjects).stream()
                     .map(ImageDBModel::mapToOutputModel)
                     .collect(Collectors.toList());
+            if (result.isEmpty()) {
+                throw new ImageNotFoundException(objects);
+            }
         }
         return result;
     }
 
     public Image getImage(String imageId) {
-        return ImageDBModel.mapToOutputModel(imageRepository.findByImageId(imageId));
+        return imageRepository.findByImageId(imageId).map(ImageDBModel::mapToOutputModel).orElseThrow(() -> new ImageNotFoundException(imageId));
     }
 
 
