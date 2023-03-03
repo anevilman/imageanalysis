@@ -42,19 +42,8 @@ public class ImageAnalysisController {
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     public Image submitImage(@RequestBody ImageSubmission imageSubmission) {
-        //TODO add validation logic
-        return imagePostHandler.submitImage(imageSubmission);
-    }
 
-    @GetMapping("test")
-    public String test() {
-        System.out.println(
-                UriComponentsBuilder
-                        .fromUriString("https://api.imagga.com")
-                        .pathSegment("v2", "uploads")
-                        .build()
-                        .toUri());
-        return "GOOD";
+        return imagePostHandler.submitImage(imageSubmission);
     }
 
 }

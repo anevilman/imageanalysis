@@ -40,7 +40,10 @@ public class ImagePostHandler {
         String newId = UUID.randomUUID().toString();
         String newLabel = Optional.ofNullable(imageSubmission.getLabel()).orElse(newId);
 
-        List<ObjectDBModel> objects = selectAndInsertObjects(objectTagger.findObjects(imageSubmission));
+        List<ObjectDBModel> objects =
+                Optional.ofNullable(imageSubmission.getDetectObjects()).orElse(false)
+                ? selectAndInsertObjects(objectTagger.findObjects(imageSubmission))
+                : Collections.emptyList();
 
         ImageDBModel newImage = ImageDBModel.builder()
                 .imageId(newId)
