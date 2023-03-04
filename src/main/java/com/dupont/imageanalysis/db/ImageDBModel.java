@@ -20,10 +20,7 @@ public class ImageDBModel {
         return Image.builder()
                 .id(dbModel.imageId)
                 .label(dbModel.imageLabel)
-                .objects(dbModel.imageObjects.stream()
-                        .map(ObjectDBModel::getObjectName)
-                        .collect(Collectors.toSet())
-                )
+                .objects(ObjectDBModel.convertCollection(dbModel.imageObjects))
                 .build();
     }
 

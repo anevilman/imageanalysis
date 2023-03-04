@@ -19,7 +19,7 @@ public class ImageGetHandler {
     private final ImageRepository imageRepository;
     private final ObjectRepository objectRepository;
 
-    private ImageGetHandler(ImageRepository imageRepository, ObjectRepository objectRepository) {
+    public ImageGetHandler(ImageRepository imageRepository, ObjectRepository objectRepository) {
         this.imageRepository = imageRepository;
         this.objectRepository = objectRepository;
     }
@@ -28,25 +28,21 @@ public class ImageGetHandler {
         return objects.isEmpty() ? getAllImages() : getObjectImages(objects);
     }
 
-    private List<Image> getAllImages() {
+    List<Image> getAllImages() {
         return StreamSupport.stream(imageRepository.findAll().spliterator(), false)
                 .map(ImageDBModel::mapToOutputModel)
                 .collect(Collectors.toList());
     }
 
-    private List<Image> getObjectImages(Set<String> objects) {
+    List<Image> getObjectImages(Set<String> objects) {
         List<ObjectDBModel> dbObjects = objectRepository.findByObjectNameIn(objects);
         List<Image> result;
-        if (dbObjects.isEmpty()) {
-            result = Collections.emptyList();
-        } else {
-            result = imageRepository.findByImageObjectsIn(dbObjects).stream()
-                    .distinct()
-                    .map(ImageDBModel::mapToOutputModel)
-                    .collect(Collectors.toList());
-            if (result.isEmpty()) {
-                throw new ImageNotFoundException(objects);
-            }
+        result = imageRepository.findByImageObjectsIn(dbObjects).stream()
+                .distinct()
+                .map(ImageDBModel::mapToOutputModel)
+                .collect(Collectors.toList());
+        if (result.isEmpty()) {
+            throw new ImageNotFoundException(objects);
         }
         return result;
     }

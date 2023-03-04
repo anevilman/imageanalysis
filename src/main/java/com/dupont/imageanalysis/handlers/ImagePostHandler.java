@@ -26,7 +26,7 @@ public class ImagePostHandler {
     }
 
     public List<ObjectDBModel> selectAndInsertObjects(Set<String> objects) {
-        List<ObjectDBModel> storedObjects = objectRepository.findByObjectNameIn(objects);
+        List<ObjectDBModel> storedObjects = new LinkedList<>(objectRepository.findByObjectNameIn(objects));
         Set<String> storedObjectNames = storedObjects.stream().map(ObjectDBModel::getObjectName).collect(Collectors.toSet());
         objects.stream()
                 .filter(object -> !storedObjectNames.contains(object))

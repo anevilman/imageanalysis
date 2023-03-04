@@ -1,6 +1,7 @@
 package com.dupont.imageanalysis.handlers.taggers.imagga;
 
 import com.dupont.imageanalysis.exceptions.InvalidRequestException;
+import com.dupont.imageanalysis.exceptions.TaggingException;
 import com.dupont.imageanalysis.handlers.taggers.ObjectTagger;
 import com.dupont.imageanalysis.models.ImageSubmission;
 import org.springframework.context.annotation.Profile;
@@ -27,8 +28,8 @@ public class ImaggaHandler implements ObjectTagger {
 
     private final RestTemplate restTemplate;
 
-    public ImaggaHandler() {
-        restTemplate = new RestTemplate();
+    public ImaggaHandler(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
 
@@ -58,7 +59,7 @@ public class ImaggaHandler implements ObjectTagger {
         return Optional.ofNullable(response.getBody())
                 .map(ImaggaUploadResponse::getResult)
                 .map(ImaggaUploadResult::getUploadId)
-                .orElseThrow(RuntimeException::new); //TODO throw better exception
+                .orElseThrow(() -> new TaggingException("Image upload failed"));
     }
 
     @Override
@@ -70,6 +71,9 @@ public class ImaggaHandler implements ObjectTagger {
             builder.queryParam("image_upload_id", uploadId);
             imageUri = builder.build().toUri();
         } else {
+            //Don't like doing it this way, but couldn't find a way how to get
+            //UriComponentsBuilder to correctly encode the image URL
+            //It either wouldn't encode enough or would double-encode things
             String urlBase = builder.toUriString() + "?image_url=" + URLEncoder.encode(imageSubmission.getImageUrl(), Charset.defaultCharset());
             try {
                 imageUri = new URI(urlBase);
