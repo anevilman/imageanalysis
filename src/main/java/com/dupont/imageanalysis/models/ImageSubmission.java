@@ -25,6 +25,10 @@ public class ImageSubmission {
         Optional<byte[]> imageOpt = Optional.ofNullable(image);
         Optional<String> imageUrlOpt = Optional.ofNullable(imageUrl);
 
+        if (imageOpt.isEmpty() && imageUrlOpt.isEmpty()) {
+            throw new InvalidRequestException("Must supply one of image or imageUrl");
+        }
+
         if (imageOpt.isPresent() && imageUrlOpt.isPresent()) {
             throw new InvalidRequestException("Must supply either image or imageUrl, not both");
         }

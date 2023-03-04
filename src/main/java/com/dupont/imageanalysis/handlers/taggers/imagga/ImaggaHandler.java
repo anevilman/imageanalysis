@@ -4,6 +4,7 @@ import com.dupont.imageanalysis.exceptions.InvalidRequestException;
 import com.dupont.imageanalysis.exceptions.TaggingException;
 import com.dupont.imageanalysis.handlers.taggers.ObjectTagger;
 import com.dupont.imageanalysis.models.ImageSubmission;
+import lombok.SneakyThrows;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -33,17 +34,17 @@ public class ImaggaHandler implements ObjectTagger {
     }
 
 
-    private UriComponentsBuilder startURIBuild(String path) {
+    static UriComponentsBuilder startURIBuild(String path) {
         return  UriComponentsBuilder
                 .fromUriString("https://api.imagga.com")
                 .pathSegment("v2", path);
     }
 
-    private void updateHeadersWithAuth(HttpHeaders headers) {
+    static void updateHeadersWithAuth(HttpHeaders headers) {
         headers.setBasicAuth(API_USER, API_SECRET);
     }
 
-    private String uploadImage(byte[] imageFile) {
+    String uploadImage(byte[] imageFile) {
         URI uploadURI = startURIBuild("uploads").build().toUri();
 
         HttpHeaders headers = new HttpHeaders();
@@ -62,25 +63,30 @@ public class ImaggaHandler implements ObjectTagger {
                 .orElseThrow(() -> new TaggingException("Image upload failed"));
     }
 
+    URI handleUpload(UriComponentsBuilder builder, byte[] image) {
+        String uploadId = uploadImage(image);
+        builder.queryParam("image_upload_id", uploadId);
+        return builder.build().toUri();
+    }
+
+    //Putting sneaky throws here because there shouldn't be a way
+    //to get a malformed URI
+    @SneakyThrows
+    URI handleURL(UriComponentsBuilder builder, String url) {
+        //Don't like doing it this way, but couldn't find a way how to get
+        //UriComponentsBuilder to correctly encode the image URL
+        //It either wouldn't encode enough or would double-encode things
+        String urlBase = builder.toUriString() + "?image_url=" + URLEncoder.encode(url, Charset.defaultCharset());
+        return new URI(urlBase);
+    }
+
     @Override
     public Set<String> findObjects(ImageSubmission imageSubmission) {
-        final URI imageUri;
         UriComponentsBuilder builder = startURIBuild("tags");
-        if (imageSubmission.getImage() != null) {
-            String uploadId = uploadImage(imageSubmission.getImage());
-            builder.queryParam("image_upload_id", uploadId);
-            imageUri = builder.build().toUri();
-        } else {
-            //Don't like doing it this way, but couldn't find a way how to get
-            //UriComponentsBuilder to correctly encode the image URL
-            //It either wouldn't encode enough or would double-encode things
-            String urlBase = builder.toUriString() + "?image_url=" + URLEncoder.encode(imageSubmission.getImageUrl(), Charset.defaultCharset());
-            try {
-                imageUri = new URI(urlBase);
-            } catch (URISyntaxException e) {
-                throw new InvalidRequestException(e.getMessage());
-            }
-        }
+        final URI imageUri = Optional.ofNullable(imageSubmission.getImage())
+                .map(image -> handleUpload(builder, image))
+                .orElseGet(() -> handleURL(builder, imageSubmission.getImageUrl()));
+
         HttpHeaders headers = new HttpHeaders();
         updateHeadersWithAuth(headers);
 
