@@ -2,6 +2,8 @@ package com.dupont.imageanalysis.handlers.taggers.imagga;
 
 import com.dupont.imageanalysis.exceptions.TaggingException;
 import com.dupont.imageanalysis.models.ImageSubmission;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -200,6 +202,28 @@ public class ImaggaHandlerTest {
         Set<String> objects = imaggaHandler.findObjects(submission);
 
         Assertions.assertEquals(Set.of("X", "Z"), objects);
+    }
+
+    @Test
+    @DisplayName("should be able to deserialize tag response from JSON")
+    void shouldBeAbleToDeserializeTagResponseFromJSON() throws JsonProcessingException {
+        String responseJSON = "{\"result\": {\"tags\": [{\"confidence\": 14.0, \"tag\": {\"en\": \"tag\"}}]}}";
+
+        ImaggaTagResponse response = new ObjectMapper().readValue(responseJSON, ImaggaTagResponse.class);
+
+        Assertions.assertEquals(14.0, response.getResult().getTags().get(0).getConfidence());
+        Assertions.assertEquals("tag", response.getResult().getTags().get(0).getTag().getEn());
+    }
+
+    @Test
+    @DisplayName("should be able to deserialize upload response from JSON")
+    void shouldBeAbleToDeserializeFromJSON() throws JsonProcessingException {
+        String responseJSON = "{\"result\": {\"uploadId\": \"ID\"}, \"status\": {\"type\": \"OK\"}}";
+
+        ImaggaUploadResponse response = new ObjectMapper().readValue(responseJSON, ImaggaUploadResponse.class);
+
+        Assertions.assertEquals("OK", response.getStatus().getType());
+        Assertions.assertEquals("ID", response.getResult().getUploadId());
     }
 
 }

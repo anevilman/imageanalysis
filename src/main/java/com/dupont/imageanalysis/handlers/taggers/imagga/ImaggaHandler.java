@@ -1,6 +1,5 @@
 package com.dupont.imageanalysis.handlers.taggers.imagga;
 
-import com.dupont.imageanalysis.exceptions.InvalidRequestException;
 import com.dupont.imageanalysis.exceptions.TaggingException;
 import com.dupont.imageanalysis.handlers.taggers.ObjectTagger;
 import com.dupont.imageanalysis.models.ImageSubmission;
@@ -14,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.*;

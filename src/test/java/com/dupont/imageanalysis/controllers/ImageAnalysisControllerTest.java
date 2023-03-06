@@ -41,7 +41,7 @@ public class ImageAnalysisControllerTest {
 
     @Test
     void postImageShouldCallPostHandler() {
-        testObject.submitImage(new ImageSubmission());
+        testObject.submitImage(ImageSubmission.builder().image(new byte[0]).build());
         Mockito.verify(imagePostHandler).submitImage(Mockito.any());
     }
 }
