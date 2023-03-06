@@ -36,7 +36,7 @@ public class ImagePostHandlerTest {
 
     @BeforeEach
     void setup() {
-        Mockito.when(imageRepository.save(Mockito.any())).thenAnswer(func -> func.getArguments()[0]);
+        Mockito.lenient().when(imageRepository.save(Mockito.any())).thenAnswer(func -> func.getArguments()[0]);
         imagePostHandler = new ImagePostHandler(imageRepository, objectRepository, objectTagger);
     }
 
